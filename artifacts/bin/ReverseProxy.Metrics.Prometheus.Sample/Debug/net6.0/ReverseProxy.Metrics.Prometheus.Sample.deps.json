@@ -1,0 +1,150 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "ReverseProxy.Metrics.Prometheus.Sample/2.0.1-dev": {
+        "dependencies": {
+          "Microsoft.SourceLink.AzureRepos.Git": "1.2.0-beta-22425-01",
+          "Microsoft.SourceLink.GitHub": "1.2.0-beta-22425-01",
+          "Yarp.Telemetry.Consumption": "2.0.1",
+          "prometheus-net": "4.1.1",
+          "prometheus-net.AspNetCore": "4.1.1"
+        },
+        "runtime": {
+          "ReverseProxy.Metrics.Prometheus.Sample.dll": {}
+        }
+      },
+      "Microsoft.Build.Tasks.Git/1.2.0-beta-22425-01": {},
+      "Microsoft.SourceLink.AzureRepos.Git/1.2.0-beta-22425-01": {
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "1.2.0-beta-22425-01",
+          "Microsoft.SourceLink.Common": "1.2.0-beta-22425-01"
+        }
+      },
+      "Microsoft.SourceLink.Common/1.2.0-beta-22425-01": {},
+      "Microsoft.SourceLink.GitHub/1.2.0-beta-22425-01": {
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "1.2.0-beta-22425-01",
+          "Microsoft.SourceLink.Common": "1.2.0-beta-22425-01"
+        }
+      },
+      "prometheus-net/4.1.1": {
+        "runtime": {
+          "lib/netcoreapp2.1/Prometheus.NetCore.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.1.1.0"
+          },
+          "lib/netcoreapp2.1/Prometheus.NetStandard.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.1.1.0"
+          }
+        }
+      },
+      "prometheus-net.AspNetCore/4.1.1": {
+        "dependencies": {
+          "prometheus-net": "4.1.1"
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/Prometheus.AspNetCore.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.1.1.0"
+          }
+        }
+      },
+      "System.IO.Hashing/7.0.0": {
+        "runtime": {
+          "lib/net6.0/System.IO.Hashing.dll": {
+            "assemblyVersion": "7.0.0.0",
+            "fileVersion": "7.0.22.51805"
+          }
+        }
+      },
+      "Yarp.ReverseProxy/2.0.1": {
+        "dependencies": {
+          "System.IO.Hashing": "7.0.0"
+        },
+        "runtime": {
+          "Yarp.ReverseProxy.dll": {}
+        }
+      },
+      "Yarp.Telemetry.Consumption/2.0.1": {
+        "dependencies": {
+          "Yarp.ReverseProxy": "2.0.1"
+        },
+        "runtime": {
+          "Yarp.Telemetry.Consumption.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ReverseProxy.Metrics.Prometheus.Sample/2.0.1-dev": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Build.Tasks.Git/1.2.0-beta-22425-01": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-54vWaopFau9YiFOnk1n0rpdM2ql/NnKSEPqPaBQTkLL5+4gGOvLjX3JJj0Ms5/AG/XiWLCDOhOSUUgzru65x6w==",
+      "path": "microsoft.build.tasks.git/1.2.0-beta-22425-01",
+      "hashPath": "microsoft.build.tasks.git.1.2.0-beta-22425-01.nupkg.sha512"
+    },
+    "Microsoft.SourceLink.AzureRepos.Git/1.2.0-beta-22425-01": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MrOMXzwwUvf7Ba/wfQKUWxaRHBr4w+mv8tq88s/8CIS0Yl/gawqEXKbtmpIhf9+FRLOdW7VwCHfO+xw5eRPZrg==",
+      "path": "microsoft.sourcelink.azurerepos.git/1.2.0-beta-22425-01",
+      "hashPath": "microsoft.sourcelink.azurerepos.git.1.2.0-beta-22425-01.nupkg.sha512"
+    },
+    "Microsoft.SourceLink.Common/1.2.0-beta-22425-01": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0Rijeitb0SXMXJeddQyOuJUcUq2auB398ngKxYemk9aBKvfGFYLUMHH8YkkjLiOwUt/YurrwzySAVFUERleJyw==",
+      "path": "microsoft.sourcelink.common/1.2.0-beta-22425-01",
+      "hashPath": "microsoft.sourcelink.common.1.2.0-beta-22425-01.nupkg.sha512"
+    },
+    "Microsoft.SourceLink.GitHub/1.2.0-beta-22425-01": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yZdV5Uc+pAeeYXCRkradk4Pxo9QtcylnH1MjsNZ5qlOTrPTj4fGsapaaHircqQj8UwXI0iGEqFUBL4LFfRbyGg==",
+      "path": "microsoft.sourcelink.github/1.2.0-beta-22425-01",
+      "hashPath": "microsoft.sourcelink.github.1.2.0-beta-22425-01.nupkg.sha512"
+    },
+    "prometheus-net/4.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A+z2qxPv+tJOl78yUaQEzyDMap0sjjKL+WVUa+JzXyRQ1ZPtNeDf6qXD+w7tYkVd88GQtnoJ7xDaxluiOM6S8Q==",
+      "path": "prometheus-net/4.1.1",
+      "hashPath": "prometheus-net.4.1.1.nupkg.sha512"
+    },
+    "prometheus-net.AspNetCore/4.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-l9+LcJfVJ9vNbwSuRNqz+/GnfVlVsiWjjDZmrq3BFV2tizX9Emu1u96yKNyYb6H5DKZseC5yMw2/8GJEj1b76Q==",
+      "path": "prometheus-net.aspnetcore/4.1.1",
+      "hashPath": "prometheus-net.aspnetcore.4.1.1.nupkg.sha512"
+    },
+    "System.IO.Hashing/7.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-sDnWM0N3AMCa86LrKTWeF3BZLD2sgWyYUc7HL6z4+xyDZNQRwzmxbo4qP2rX2MqC+Sy1/gOSRDah5ltxY5jPxw==",
+      "path": "system.io.hashing/7.0.0",
+      "hashPath": "system.io.hashing.7.0.0.nupkg.sha512"
+    },
+    "Yarp.ReverseProxy/2.0.1": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Yarp.Telemetry.Consumption/2.0.1": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

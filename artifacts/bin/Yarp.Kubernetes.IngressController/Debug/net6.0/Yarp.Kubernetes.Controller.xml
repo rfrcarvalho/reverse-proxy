@@ -1,0 +1,889 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Yarp.Kubernetes.Controller</name>
+    </assembly>
+    <members>
+        <member name="T:Yarp.Kubernetes.Controller.Caching.Endpoints">
+            <summary>
+            Holds data needed from a <see cref="T:k8s.Models.V1Endpoints"/> resource.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Caching.ICache">
+            <summary>
+            ICache service interface holds onto least amount of data necessary
+            for <see cref="T:Yarp.Kubernetes.Controller.Services.IReconciler"/> to process work.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Caching.IngressCache">
+            <summary>
+            ICache service interface holds onto least amount of data necessary
+            for <see cref="T:Yarp.Kubernetes.Controller.Services.IReconciler"/> to process work.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Caching.IngressClassData">
+            <summary>
+            Holds data needed from a <see cref="T:k8s.Models.V1IngressClass"/> resource.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Caching.IngressData">
+            <summary>
+            Holds data needed from a <see cref="T:k8s.Models.V1Ingress"/> resource.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Caching.NamespaceCache">
+            <summary>
+            Per-namespace cache data. Implicitly scopes name-based lookups to same namespace. Also
+            intended to make updates faster because cross-reference dictionaries are not cluster-wide.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Caching.ServiceData">
+            <summary>
+            Holds data needed from a <see cref="T:k8s.Models.V1Service"/> resource.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Certificates.CertificateHelper.EnsurePemFormat(System.Byte[],System.String)">
+            <summary>
+            Kubernetes Secrets should be stored in base-64 encoded DER format (see https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets)
+            but need can be imported into a <see cref="T:System.Security.Cryptography.X509Certificates.X509Certificate2"/> object via PEM. Before this type of secret existed, an Opaque secret would be
+            used containing the full PEM format, so it's possible that the incorrect format would be used.
+            Doing it this way means we are more tolerant in handling certs in the wrong format.
+            </summary>
+            <param name="data">The raw data.</param>
+            <param name="pemType">The type for the PEM header.</param>
+            <returns>The certificate data in PEM format.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Certificates.IServerCertificateSelector">
+            <summary>
+            A mechanism for obtaining server certificates dynamically based on the SNI domain name.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Certificates.IServerCertificateSelector.GetCertificate(Microsoft.AspNetCore.Connections.ConnectionContext,System.String)">
+            <summary>
+            Retrieve a certificate using the provided domain name.
+            </summary>
+            <param name="connectionContext">The connection context.</param>
+            <param name="domainName">The domain name.</param>
+            <returns>Either returns the specific certificate for the domain name, a wildcard certificates, or no certificate.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Certificates.IServerCertificateSelector.AddCertificate(Yarp.Kubernetes.Controller.NamespacedName,System.Security.Cryptography.X509Certificates.X509Certificate2)">
+            <summary>
+            Adds a certificate to the selector.
+            </summary>
+            <param name="certificateName">An identifier for the certificate that can be used to remove it.</param>
+            <param name="certificate">The server certificate.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Certificates.IServerCertificateSelector.RemoveCertificate(Yarp.Kubernetes.Controller.NamespacedName)">
+            <summary>
+            Removes a certificate from the selector.
+            </summary>
+            <param name="certificateName">An identifier for the certificate that can be used to remove it.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.IIngressResourceStatusUpdater.UpdateStatusAsync">
+            <summary>
+            Updates the status of cached ingresses.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Client.ResourceInformerCallback`1">
+            <summary>
+            Callback for resource event notifications.
+            </summary>
+            <typeparam name="TResource">The type of <see cref="T:k8s.IKubernetesObject`1"/> being monitored.</typeparam>
+            <param name="eventType">The type of change event which was received.</param>
+            <param name="resource">The instance of the resource which was received.</param>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Client.IResourceInformer`1">
+            <summary>
+            Interface IResourceInformer is a service which generates
+            notifications for a specific type
+            of Kubernetes object. The callback eventType informs if the notification
+            is because it is new, modified, or has been deleted.
+            Implements the <see cref="T:Microsoft.Extensions.Hosting.IHostedService" />.
+            </summary>
+            <typeparam name="TResource">The type of the t resource.</typeparam>
+            <seealso cref="T:System.IObservable`1" />
+            <seealso cref="T:Microsoft.Extensions.Hosting.IHostedService" />
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.IResourceInformer`1.Register(Yarp.Kubernetes.Controller.Client.ResourceInformerCallback{`0})">
+            <summary>
+            Registers a callback for change notification. To ensure no events are missed the registration
+            may be created in the constructor of a dependant <see cref="T:Microsoft.Extensions.Hosting.IHostedService"/>. The returned
+            registration should be disposed when the receiver is ending its work.
+            </summary>
+            <param name="callback">The delegate that is invoked with each resource notification.</param>
+            <returns>A registration that should be disposed to end the notifications.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.IResourceInformer.StartWatching">
+            <summary>
+            Instructs the resource informer to being watching resources. Allows the startup of informers to be synchronised.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.IResourceInformer.ReadyAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns a task that can be awaited to know when the initial listing of resources is complete.
+            Once an await on this method it is safe to assume that all of the knowledge of this resource
+            type has been made available, and everything going forward will be updatres.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.IResourceInformer.Register(Yarp.Kubernetes.Controller.Client.ResourceInformerCallback{k8s.IKubernetesObject{k8s.Models.V1ObjectMeta}})">
+            <summary>
+            Registers a callback for change notification. To ensure no events are missed the registration
+            may be created in the constructor of a dependant <see cref="T:Microsoft.Extensions.Hosting.IHostedService"/>. The returned
+            registration should be disposed when the receiver is ending its work.
+            </summary>
+            <param name="callback">The delegate that is invoked with each resource notification.</param>
+            <returns>A registration that should be disposed to end the notifications.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Client.IResourceInformerRegistration">
+            <summary>
+            Returned by <see cref="M:Yarp.Kubernetes.Controller.Client.IResourceInformer`1.Register(Yarp.Kubernetes.Controller.Client.ResourceInformerCallback{`0})"/> to control the lifetime of an event
+            notification connection. Call <see cref="M:System.IDisposable.Dispose"/> when the lifetime of the notification receiver is ending.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.IResourceInformerRegistration.ReadyAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns a task that can be awaited to know when the initial listing of resources is complete.
+            Once an await on this method it is safe to assume that all of the knowledge of this resource
+            type has been made available, and everything going forward will be updatres.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Client.KubernetesClientOptions">
+            <summary>
+            Class KubernetesClientOptions.
+            </summary>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.Client.KubernetesClientOptions.Configuration">
+            <summary>
+            Gets or sets the configuration.
+            </summary>
+            <value>The configuration.</value>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Client.ResourceInformer`2">
+            <summary>
+            Class ResourceInformer.
+            Implements the <see cref="T:Yarp.Kubernetes.Controller.Client.IResourceInformer`1" />.
+            Implements the <see cref="T:System.IDisposable" />.
+            </summary>
+            <typeparam name="TResource">The type of the t resource.</typeparam>
+            <typeparam name="TListResource">The type of the t resource used in lists.</typeparam>
+            <seealso cref="T:Yarp.Kubernetes.Controller.Client.IResourceInformer`1" />
+            <seealso cref="T:System.IDisposable" />
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.ResourceInformer`2.#ctor(k8s.IKubernetes,Yarp.Kubernetes.Controller.Client.ResourceSelector{`0},Microsoft.Extensions.Hosting.IHostApplicationLifetime,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.Client.ResourceInformer`2" /> class.
+            </summary>
+            <param name="client">The client.</param>
+            <param name="selector">A resource selector for (optionally) filtering the list of resources.</param>
+            <param name="hostApplicationLifetime">The host application lifetime.</param>
+            <param name="logger">The logger.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.ResourceInformer`2.Dispose(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.ResourceInformer`2.ReadyAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Client.ResourceInformer`2.RunAsync(System.Threading.CancellationToken)">
+            <summary>
+            RunAsync starts processing when StartAsync is called, and is terminated when
+            StopAsync is called.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Client.ResourceSelector`1">
+            <summary>
+            Provides a mechanism for <see cref="T:Yarp.Kubernetes.Controller.Client.IResourceInformer`1"/> to constrain search based on fields in the resource.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Hosting.BackgroundHostedService">
+            <summary>
+            Class BackgroundHostedService.
+            Implements the <see cref="T:Microsoft.Extensions.Hosting.IHostedService" />
+            Implements the <see cref="T:System.IDisposable" />.
+            </summary>
+            <seealso cref="T:Microsoft.Extensions.Hosting.IHostedService" />
+            <seealso cref="T:System.IDisposable" />
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Hosting.BackgroundHostedService.#ctor(Microsoft.Extensions.Hosting.IHostApplicationLifetime,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.Hosting.BackgroundHostedService"/> class.
+            </summary>
+            <param name="hostApplicationLifetime">The host application lifetime.</param>
+            <param name="logger">The logger.</param>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.Hosting.BackgroundHostedService.Logger">
+            <summary>
+            Gets or sets the logger.
+            </summary>
+            <value>The logger.</value>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Hosting.BackgroundHostedService.StartAsync(System.Threading.CancellationToken)">
+            <summary>
+            Triggered when the application host is ready to start the service.
+            </summary>
+            <param name="cancellationToken">Indicates that the start process has been aborted.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Hosting.BackgroundHostedService.StopAsync(System.Threading.CancellationToken)">
+            <summary>
+            stop as an asynchronous operation.
+            </summary>
+            <param name="cancellationToken">Indicates that the shutdown process should no longer be graceful.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task" /> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Hosting.BackgroundHostedService.RunAsync(System.Threading.CancellationToken)">
+            <summary>
+            Runs the asynchronous background work.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task" /> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Hosting.HostedServiceAdapter`1">
+            <summary>
+            Delegates start and stop calls to service-specific interface.
+            </summary>
+            <typeparam name="TService">The service interface to delegate onto.</typeparam>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Hosting.HostedServiceAdapter`1.#ctor(`0)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.Hosting.HostedServiceAdapter`1" /> class.
+            </summary>
+            <param name="service">The service interface to delegate onto.</param>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.NamespacedName">
+            <summary>
+            Struct NamespacedName is a value that acts as a dictionary key. It is a comparable
+            combination of a metadata namespace and name.
+            Implements the <see cref="T:System.IEquatable`1" />.
+            </summary>
+            <seealso cref="T:System.IEquatable`1" />
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.NamespacedName.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.NamespacedName"/> struct.
+            </summary>
+            <param name="namespace">The namespace.</param>
+            <param name="name">The name.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.NamespacedName.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.NamespacedName"/> struct.
+            </summary>
+            <param name="name">The name.</param>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.NamespacedName.Namespace">
+            <summary>
+            Gets the namespace.
+            </summary>
+            <value>The namespace.</value>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.NamespacedName.Name">
+            <summary>
+            Gets the name.
+            </summary>
+            <value>The name.</value>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.NamespacedName.op_Equality(Yarp.Kubernetes.Controller.NamespacedName,Yarp.Kubernetes.Controller.NamespacedName)">
+            <summary>
+            Implements the == operator.
+            </summary>
+            <param name="left">The left.</param>
+            <param name="right">The right.</param>
+            <returns>The result of the operator.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.NamespacedName.op_Inequality(Yarp.Kubernetes.Controller.NamespacedName,Yarp.Kubernetes.Controller.NamespacedName)">
+            <summary>
+            Implements the != operator.
+            </summary>
+            <param name="left">The left.</param>
+            <param name="right">The right.</param>
+            <returns>The result of the operator.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.NamespacedName.From(k8s.IKubernetesObject{k8s.Models.V1ObjectMeta})">
+            <summary>
+            Gets key values from the specified resource.
+            </summary>
+            <param name="resource">The resource.</param>
+            <returns>NamespacedName.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.NamespacedName.From(k8s.Models.V1ObjectMeta,k8s.Models.V1OwnerReference,System.Nullable{System.Boolean})">
+            <summary>
+            Gets key values from the specified metadata.
+            </summary>
+            <param name="metadata">The metadata.</param>
+            <param name="ownerReference">The owner reference.</param>
+            <param name="clusterScoped">if set to <c>true</c> [cluster scoped].</param>
+            <returns>NamespacedName.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.NamespacedName.ToString">
+            <summary>
+            Returns a <see cref="T:System.String" /> that represents this instance.
+            </summary>
+            <returns>A <see cref="T:System.String" /> that represents this instance.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Dispatching.DispatchActionResult">
+            <summary>
+            DispatchActionResult is an IActionResult which registers itself as
+            an IDispatchTarget with the provided IDispatcher. As long as the client
+            is connected this result will continue to write data to the response.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Dispatching.Dispatcher">
+            <summary>
+            IDispatcher is a service interface to bridge outgoing data to the
+            current connections.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Dispatching.IDispatcher">
+            <summary>
+            IDispatcher is a service interface to bridge outgoing data to the
+            current connections.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Dispatching.IDispatchTarget">
+            <summary>
+            IDispatchTarget is what an <see cref="T:Yarp.Kubernetes.Controller.Dispatching.IDispatcher"/> will use to
+            dispatch information.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Controllers.DispatchController">
+            <summary>
+            DispatchController provides API used by callers to begin streaming
+            information being sent out through the <see cref="T:Yarp.Kubernetes.Controller.Dispatching.IDispatcher"/> muxer.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1">
+            <summary>
+            Interface IWorkQueue holds a series of work item objects. When objects are removed from the queue they are noted
+            as well in a processing set. If new items arrive while processing they are not added to the queue until
+            the processing of that item is <see cref="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.Done(`0)" />. In this way processing the same item twice simultaneously due to
+            incoming event notifications is not possible.
+            Ported from https://github.com/kubernetes/client-go/blob/master/util/workqueue/queue.go.
+            </summary>
+            <typeparam name="TItem">The type of the t item.</typeparam>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.Add(`0)">
+            <summary>
+            Adds the specified item.
+            </summary>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.Len">
+            <summary>
+            Returns number of items actively waiting in queue.
+            </summary>
+            <returns>System.Int32.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.GetAsync(System.Threading.CancellationToken)">
+            <summary>
+            Gets the next item in the queue once it is available.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <returns>Task&lt;System.ValueTuple&lt;TItem, System.Boolean&gt;&gt;.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.Done(`0)">
+            <summary>
+            Called after <see cref="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.GetAsync(System.Threading.CancellationToken)"/> to inform the queue that the item
+            processing is complete.
+            </summary>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.ShutDown">
+            <summary>
+            Shuts down.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1.ShuttingDown">
+            <summary>
+            Shuttings down.
+            </summary>
+            <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Queues.WorkQueue`1">
+            <summary>
+            Class WorkQueue is the default implementation of a work queue.
+            Implements the <see cref="T:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1" />.
+            </summary>
+            <typeparam name="TItem">The type of the t item.</typeparam>
+            <seealso cref="T:Yarp.Kubernetes.Controller.Queues.IWorkQueue`1" />
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.Add(`0)">
+            <summary>
+            Adds the specified item.
+            </summary>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.GetAsync(System.Threading.CancellationToken)">
+            <summary>
+            Gets the specified cancellation token.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <returns>Task&lt;System.ValueTuple&lt;TItem, System.Boolean&gt;&gt;.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.Done(`0)">
+            <summary>
+            Dones the specified item.
+            </summary>
+            <param name="item">The item.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.Len">
+            <summary>
+            Lengthes this instance.
+            </summary>
+            <returns>System.Int32.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.ShutDown">
+            <summary>
+            Shuts down.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.ShuttingDown">
+            <summary>
+            Shuttings down.
+            </summary>
+            <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.Dispose(System.Boolean)">
+            <summary>
+            Releases unmanaged and - optionally - managed resources.
+            </summary>
+            <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Queues.WorkQueue`1.OnGetAsync(System.Threading.CancellationToken)">
+            <summary>
+            Called in GetAsync BEFORE the items is dequeued to allow rate-limiting of processing.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation</param>
+            <returns>A task.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Rate.Limit">
+            <summary>
+            Struct Limit defines the maximum frequency of some events.
+            Limit is represented as number of events per second.
+            A zero Limit allows no events.
+            https://github.com/golang/time/blob/master/rate/rate.go#L19
+            Implements the <see cref="T:System.IEquatable`1" />.
+            </summary>
+            <seealso cref="T:System.IEquatable`1" />
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.#ctor(System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.Rate.Limit"/> struct.
+            </summary>
+            <param name="perSecond">The per second.</param>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.Rate.Limit.Max">
+            <summary>
+            Gets a predefined maximum <see cref="T:Yarp.Kubernetes.Controller.Rate.Limit"/>.
+            </summary>
+            <value>The maximum.</value>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.op_Equality(Yarp.Kubernetes.Controller.Rate.Limit,Yarp.Kubernetes.Controller.Rate.Limit)">
+            <summary>
+            Implements the == operator.
+            </summary>
+            <param name="left">The left.</param>
+            <param name="right">The right.</param>
+            <returns>The result of the operator.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.op_Inequality(Yarp.Kubernetes.Controller.Rate.Limit,Yarp.Kubernetes.Controller.Rate.Limit)">
+            <summary>
+            Implements the != operator.
+            </summary>
+            <param name="left">The left.</param>
+            <param name="right">The right.</param>
+            <returns>The result of the operator.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.TokensFromDuration(System.TimeSpan)">
+            <summary>
+            TokensFromDuration is a unit conversion function from a time duration to the number of tokens
+            which could be accumulated during that duration at a rate of limit tokens per second.
+            https://github.com/golang/time/blob/master/rate/rate.go#L396.
+            </summary>
+            <param name="duration">The duration.</param>
+            <returns>System.Double.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.DurationFromTokens(System.Double)">
+            <summary>
+            Durations from tokens is a unit conversion function from the number of tokens to the duration
+            of time it takes to accumulate them at a rate of limit tokens per second.
+            https://github.com/golang/time/blob/master/rate/rate.go#L389.
+            </summary>
+            <param name="tokens">The tokens.</param>
+            <returns>TimeSpan.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.Equals(System.Object)">
+            <summary>
+            Determines whether the specified <see cref="T:System.Object" /> is equal to this instance.
+            </summary>
+            <param name="obj">The object to compare with the current instance.</param>
+            <returns><c>true</c> if the specified <see cref="T:System.Object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.Equals(Yarp.Kubernetes.Controller.Rate.Limit)">
+            <summary>
+            Indicates whether the current object is equal to another object of the same type.
+            </summary>
+            <param name="other">An object to compare with this object.</param>
+            <returns><see langword="true" /> if the current object is equal to the <paramref name="other" /> parameter; otherwise, <see langword="false" />.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limit.GetHashCode">
+            <summary>
+            Returns a hash code for this instance.
+            </summary>
+            <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Rate.Limiter">
+            <summary>
+            <para>
+            Class Limiter controls how frequently events are allowed to happen.
+            It implements a "token bucket" of size b, initially full and refilled
+            at rate r tokens per second.
+            Informally, in any large enough time interval, the Limiter limits the
+            rate to r tokens per second, with a maximum burst size of b events.
+            As a special case, if r == Inf (the infinite rate), b is ignored.
+            See https://en.wikipedia.org/wiki/Token_bucket for more about token buckets.
+            </para>
+            <para>
+            The zero value is a valid Limiter, but it will reject all events.
+            Use NewLimiter to create non-zero Limiters.
+            </para>
+            <para>
+            Limiter has three main methods, Allow, Reserve, and Wait.
+            Most callers should use Wait.
+            </para>
+            <para>
+            Each of the three methods consumes a single token.
+            They differ in their behavior when no token is available.
+            If no token is available, Allow returns false.
+            If no token is available, Reserve returns a reservation for a future token
+            and the amount of time the caller must wait before using it.
+            If no token is available, Wait blocks until one can be obtained
+            or its associated context.Context is canceled.
+            The methods AllowN, ReserveN, and WaitN consume n tokens.
+            </para>
+            https://github.com/golang/time/blob/master/rate/rate.go#L55.
+            </summary>
+        </member>
+        <member name="F:Yarp.Kubernetes.Controller.Rate.Limiter._last">
+            <summary>
+            The last time the limiter's tokens field was updated.
+            </summary>
+        </member>
+        <member name="F:Yarp.Kubernetes.Controller.Rate.Limiter._lastEvent">
+            <summary>
+            the latest time of a rate-limited event (past or future).
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.#ctor(Yarp.Kubernetes.Controller.Rate.Limit,System.Int32,Microsoft.Extensions.Internal.ISystemClock)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.Rate.Limiter" /> class.
+            Allows events up to <see cref="T:Yarp.Kubernetes.Controller.Rate.Limit" /><paramref name="limit" /> and permits bursts of
+            at most <paramref name="burst" /> tokens.
+            </summary>
+            <param name="limit">The count per second which is allowed.</param>
+            <param name="burst">The burst.</param>
+            <param name="systemClock">Accessor for the current UTC time.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.Allow">
+            <summary>
+            Check to allow one token effective immediately.
+            </summary>
+            <returns><c>true</c> if a token is available and used, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.AllowN(System.DateTimeOffset,System.Int32)">
+            <summary>
+            Checks if a number of tokens are available by a given time.
+            They are consumed if available.
+            </summary>
+            <param name="now">The now.</param>
+            <param name="number">The number.</param>
+            <returns><c>true</c> if a number token is available and used, <c>false</c> otherwise.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.Reserve">
+            <summary>
+            Reserves this instance.
+            </summary>
+            <returns>Reservation.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.Reserve(System.DateTimeOffset,System.Int32)">
+            <summary>
+            ReserveN returns a Reservation that indicates how long the caller must wait before n events happen.
+            The Limiter takes this Reservation into account when allowing future events.
+            The returned Reservation’s OK() method returns false if n exceeds the Limiter's burst size.
+            Usage example:
+            r := lim.ReserveN(time.Now(), 1)
+            if !r.OK() {
+            return
+            }
+            time.Sleep(r.Delay())
+            Act()
+            Use this method if you wish to wait and slow down in accordance with the rate limit without dropping events.
+            If you need to respect a deadline or cancel the delay, use Wait instead.
+            To drop or skip events exceeding rate limit, use Allow instead.
+            </summary>
+            <param name="now">The now.</param>
+            <param name="count">The number.</param>
+            <returns>Reservation.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.WaitAsync(System.Threading.CancellationToken)">
+            <summary>
+            Waits the asynchronous.
+            </summary>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <returns>Task.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.WaitAsync(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            wait as an asynchronous operation.
+            </summary>
+            <param name="count">The count.</param>
+            <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+            <exception cref="T:System.Exception">rate: Wait(count={count}) exceeds limiter's burst {burst}.</exception>
+            <returns>A <see cref="T:System.Threading.Tasks.Task"/> representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.ReserveImpl(System.DateTimeOffset,System.Int32,System.TimeSpan)">
+            <summary>
+             reserveN is a helper method for AllowN, ReserveN, and WaitN.
+            maxFutureReserve specifies the maximum reservation wait duration allowed.
+            reserveN returns Reservation, not *Reservation, to avoid allocation in AllowN and WaitN.
+            </summary>
+            <param name="now">The now.</param>
+            <param name="number">The number.</param>
+            <param name="maxFutureReserve">The maximum future reserve.</param>
+            <returns>Reservation.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Limiter.Advance(System.DateTimeOffset)">
+            <summary>
+            advance calculates and returns an updated state for lim resulting from the passage of time.
+            lim is not changed.
+            advance requires that lim.mu is held.
+            </summary>
+            <param name="now">The now.</param>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Rate.Reservation">
+            <summary>
+            Class Reservation holds information about events that are permitted by a Limiter to happen after a delay.
+            A Reservation may be canceled, which may enable the Limiter to permit additional events.
+            https://github.com/golang/time/blob/master/rate/rate.go#L106.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Reservation.#ctor(Microsoft.Extensions.Internal.ISystemClock,Yarp.Kubernetes.Controller.Rate.Limiter,System.Boolean,System.Double,System.DateTimeOffset,Yarp.Kubernetes.Controller.Rate.Limit)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Yarp.Kubernetes.Controller.Rate.Reservation"/> class.
+            </summary>
+            <param name="clock">A system clock.</param>
+            <param name="limiter">The limiter.</param>
+            <param name="ok">if set to <c>true</c> [ok].</param>
+            <param name="tokens">The tokens.</param>
+            <param name="timeToAct">The time to act.</param>
+            <param name="limit">The limit.</param>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.Rate.Reservation.Ok">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Yarp.Kubernetes.Controller.Rate.Reservation"/> is ok.
+            </summary>
+            <value><c>true</c> if ok; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.Rate.Reservation.TimeToAct">
+            <summary>
+            Gets the time to act.
+            </summary>
+            <value>The time to act.</value>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Reservation.Delay">
+            <summary>
+            Delays this instance.
+            </summary>
+            <returns>TimeSpanOffset.</returns>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Rate.Reservation.DelayFrom(System.DateTimeOffset)">
+            <summary>
+            Delays from.
+            </summary>
+            <param name="now">The now.</param>
+            <returns>TimeSpan.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Services.IngressController">
+            <summary>
+            Controller receives notifications from informers. The data which is needed for processing is
+            saved in a <see cref="T:Yarp.Kubernetes.Controller.Caching.ICache"/> instance and resources which need to be reconciled are
+            added to an <see cref="T:Yarp.Kubernetes.Controller.Queues.ProcessingRateLimitedQueue`1"/>. The background task dequeues
+            items and passes them to an <see cref="T:Yarp.Kubernetes.Controller.Services.IReconciler"/> service for processing.
+            </summary>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Services.IngressController.Dispose(System.Boolean)">
+            <summary>
+            Disconnects from resource informers, and cause queue to become shut down.
+            </summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Services.IngressController.Notification(k8s.WatchEventType,k8s.Models.V1Ingress)">
+            <summary>
+            Called by the informer with real-time resource updates.
+            </summary>
+            <param name="eventType">Indicates if the resource new, updated, or deleted.</param>
+            <param name="resource">The information as provided by the Kubernetes API server.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Services.IngressController.Notification(k8s.WatchEventType,k8s.Models.V1Service)">
+            <summary>
+            Called by the informer with real-time resource updates.
+            </summary>
+            <param name="eventType">Indicates if the resource new, updated, or deleted.</param>
+            <param name="resource">The information as provided by the Kubernetes API server.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Services.IngressController.Notification(k8s.WatchEventType,k8s.Models.V1Endpoints)">
+            <summary>
+            Called by the informer with real-time resource updates.
+            </summary>
+            <param name="eventType">Indicates if the resource new, updated, or deleted.</param>
+            <param name="resource">The information as provided by the Kubernetes API server.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Services.IngressController.Notification(k8s.WatchEventType,k8s.Models.V1IngressClass)">
+            <summary>
+            Called by the informer with real-time resource updates.
+            </summary>
+            <param name="eventType">Indicates if the resource new, updated, or deleted.</param>
+            <param name="resource">The information as provided by the Kubernetes API server.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Services.IngressController.Notification(k8s.WatchEventType,k8s.Models.V1Secret)">
+            <summary>
+            Called by the informer with real-time resource updates.
+            </summary>
+            <param name="eventType">Indicates if the resource new, updated, or deleted.</param>
+            <param name="resource">The information as provided by the Kubernetes API server.</param>
+        </member>
+        <member name="M:Yarp.Kubernetes.Controller.Services.IngressController.RunAsync(System.Threading.CancellationToken)">
+            <summary>
+            Called once at startup by the hosting infrastructure. This function must remain running
+            for the entire lifetime of an application.
+            </summary>
+            <param name="cancellationToken">Indicates when the web application is shutting down.</param>
+            <returns>The Task representing the async function results.</returns>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Services.IReconciler">
+            <summary>
+            IReconciler is a service interface called by the <see cref="T:Yarp.Kubernetes.Controller.Services.IngressController"/> to process
+            the work items as they are dequeued.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Services.QueueItem">
+            <summary>
+            QueueItem acts as the "Key" for the _queue to manage items.
+            </summary>
+        </member>
+        <member name="P:Yarp.Kubernetes.Controller.Services.QueueItem.Change">
+            <summary>
+            This identifies that a change has occured and either configuration requires to be rebuilt, or needs to be dispatched.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Services.ReconcileData">
+            <summary>
+            ReconcileData is the information returned from <see cref="M:Yarp.Kubernetes.Controller.Caching.ICache.TryGetReconcileData(Yarp.Kubernetes.Controller.NamespacedName,Yarp.Kubernetes.Controller.Services.ReconcileData@)"/>
+            and needed by <see cref="M:Yarp.Kubernetes.Controller.Services.IReconciler.ProcessAsync(System.Threading.CancellationToken)"/>.
+            </summary>
+        </member>
+        <member name="T:Yarp.Kubernetes.Controller.Services.Reconciler">
+            <summary>
+            IReconciler is a service interface called by the <see cref="T:Yarp.Kubernetes.Controller.Services.IngressController"/> to process
+            the work items as they are dequeued.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.DependencyInjection.ServiceCollectionHostedServiceAdapterExtensions">
+            <summary>
+            Class ServiceCollectionHostedServiceAdapterExtensions.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceCollectionHostedServiceAdapterExtensions.RegisterHostedService``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers the hosted service.
+            </summary>
+            <typeparam name="TService">The type of the t service.</typeparam>
+            <param name="services">The services.</param>
+            <returns>IServiceCollection.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.DependencyInjection.KubernetesCoreExtensions">
+            <summary>
+            Class KubernetesCoreExtensions.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.KubernetesCoreExtensions.AddKubernetesCore(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Adds the kubernetes.
+            </summary>
+            <param name="services">The services.</param>
+            <returns>IServiceCollection.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.DependencyInjection.KubernetesReverseProxyServiceCollectionExtensions">
+            <summary>
+            Extensions for <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/>
+            used to register the Kubernetes-based ReverseProxy's components.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.KubernetesReverseProxyServiceCollectionExtensions.AddKubernetesReverseProxy(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Adds ReverseProxy's services to Dependency Injection.
+            </summary>
+            <param name="services">Dependency injection registration.</param>
+            <param name="config">Application configuration.</param>
+            <returns>The same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> for chaining.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.KubernetesReverseProxyServiceCollectionExtensions.AddKubernetesIngressMonitor(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Adds an ingress controller that monitors for Ingress resource changes and notifies a Yarp "Ingress" application.
+            </summary>
+            <param name="services">Dependency injection registration.</param>
+            <param name="config">Application configuration.</param>
+            <returns>The same <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> for chaining.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.KubernetesReverseProxyServiceCollectionExtensions.AddKubernetesDispatchController(Microsoft.Extensions.DependencyInjection.IMvcBuilder)">
+            <summary>
+            Adds the dispatching controller that allows a Yarp "Ingress" application to monitor for changes.
+            </summary>
+            <param name="builder">The MVC builder.</param>
+            <returns>Rhe same <see cref="T:Microsoft.Extensions.DependencyInjection.IMvcBuilder"/> for chaining.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.KubernetesReverseProxyServiceCollectionExtensions.RegisterResourceInformer``2(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers the resource informer.
+            </summary>
+            <typeparam name="TResource">The type of the t related resource.</typeparam>
+            <typeparam name="TService">The implementation type of the resource informer.</typeparam>
+            <param name="services">The services.</param>
+            <returns>IServiceCollection.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.KubernetesReverseProxyServiceCollectionExtensions.RegisterResourceInformer``2(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            Registers the resource informer with a field selector.
+            </summary>
+            <typeparam name="TResource">The type of the t related resource.</typeparam>
+            <typeparam name="TService">The implementation type of the resource informer.</typeparam>
+            <param name="services">The services.</param>
+            <param name="fieldSelector">A field selector to constrain the resources the informer retrieves.</param>
+            <returns>IServiceCollection.</returns>
+        </member>
+        <member name="T:Microsoft.AspNetCore.Hosting.KubernetesReverseProxyWebHostBuilderExtensions">
+            <summary>
+            Extensions for <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder"/>
+            used to register the Kubernetes-based ReverseProxy's components.
+            </summary>
+        </member>
+        <member name="M:Microsoft.AspNetCore.Hosting.KubernetesReverseProxyWebHostBuilderExtensions.UseKubernetesReverseProxyCertificateSelector(Microsoft.AspNetCore.Hosting.IWebHostBuilder)">
+            <summary>
+            Configures Kestrel for SNI-based certificate selection using Kubernetes Ingress TLS annotations and Kubernetes Secrets.
+            </summary>
+            <param name="builder">The web host builder.</param>
+            <returns>The same <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder"/> for chaining.</returns>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,615 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Yarp.Telemetry.Consumption</name>
+    </assembly>
+    <members>
+        <member name="T:Yarp.Telemetry.Consumption.ForwarderMetrics">
+            <summary>
+            Represents metrics reported by the Yarp.ReverseProxy event counters.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.ForwarderMetrics.Timestamp">
+            <summary>
+            Timestamp of when this <see cref="T:Yarp.Telemetry.Consumption.ForwarderMetrics"/> instance was created.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.ForwarderMetrics.RequestsStarted">
+            <summary>
+            Number of proxy requests started since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.ForwarderMetrics.RequestsStartedRate">
+            <summary>
+            Number of proxy requests started in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.ForwarderMetrics.RequestsFailed">
+            <summary>
+            Number of proxy requests that failed since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.ForwarderMetrics.CurrentRequests">
+            <summary>
+            Number of active proxy requests that have started but not yet completed or failed.
+            </summary>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.ForwarderStage">
+            <summary>
+            Stages of forwarding a request.
+            </summary>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer">
+            <summary>
+            A consumer of Yarp.ReverseProxy EventSource events.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnForwarderStart(System.DateTime,System.String)">
+            <summary>
+            Called before forwarding a request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="destinationPrefix"></param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnForwarderStop(System.DateTime,System.Int32)">
+            <summary>
+            Called after forwarding a request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="statusCode">The status code returned in the response.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnForwarderFailed(System.DateTime,Yarp.ReverseProxy.Forwarder.ForwarderError)">
+            <summary>
+            Called before <see cref="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnForwarderStop(System.DateTime,System.Int32)"/> if forwarding the request failed.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="error"><see cref="T:Yarp.ReverseProxy.Forwarder.ForwarderError"/> information for the forwarding failure.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnForwarderStage(System.DateTime,Yarp.Telemetry.Consumption.ForwarderStage)">
+            <summary>
+            Called when reaching a given stage of forwarding a request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="stage">Stage of the forwarding operation.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnContentTransferring(System.DateTime,System.Boolean,System.Int64,System.Int64,System.TimeSpan,System.TimeSpan)">
+            <summary>
+            Called periodically while a content transfer is active.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="isRequest">Indicates whether we are transferring the content from the client to the backend or vice-versa.</param>
+            <param name="contentLength">Number of bytes transferred.</param>
+            <param name="iops">Number of read/write pairs performed.</param>
+            <param name="readTime">Time spent reading from the source.</param>
+            <param name="writeTime">Time spent writing to the destination.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnContentTransferred(System.DateTime,System.Boolean,System.Int64,System.Int64,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+            <summary>
+            Called after transferring the request or response content.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="isRequest">Indicates whether we transfered the content from the client to the backend or vice-versa.</param>
+            <param name="contentLength">Number of bytes transferred.</param>
+            <param name="iops">Number of read/write pairs performed.</param>
+            <param name="readTime">Time spent reading from the source.</param>
+            <param name="writeTime">Time spent writing to the destination.</param>
+            <param name="firstReadTime">Time spent on the first read of the source.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IForwarderTelemetryConsumer.OnForwarderInvoke(System.DateTime,System.String,System.String,System.String)">
+            <summary>
+            Called before forwarding a request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="clusterId">Cluster ID</param>
+            <param name="routeId">Route ID</param>
+            <param name="destinationId">Destination ID</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.HttpMetrics">
+            <summary>
+            Represents metrics reported by the System.Net.Http event counters.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.Timestamp">
+            <summary>
+            Timestamp of when this <see cref="T:Yarp.Telemetry.Consumption.KestrelMetrics"/> instance was created.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.RequestsStarted">
+            <summary>
+            Number of HTTP requests started since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.RequestsStartedRate">
+            <summary>
+            Number of HTTP requests started in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.RequestsFailed">
+            <summary>
+            Number of HTTP requests that failed since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.RequestsFailedRate">
+            <summary>
+            Number of HTTP requests that failed in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.CurrentRequests">
+            <summary>
+            Number of active HTTP requests that have started but not yet completed or failed.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.CurrentHttp11Connections">
+            <summary>
+            Number of currently open HTTP 1.1 connections.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.CurrentHttp20Connections">
+            <summary>
+            Number of currently open HTTP 2.0 connections.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.Http11RequestsQueueDuration">
+            <summary>
+            Average time spent on queue for HTTP 1.1 requests that hit the MaxConnectionsPerServer limit in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.HttpMetrics.Http20RequestsQueueDuration">
+            <summary>
+            Average time spent on queue for HTTP 2.0 requests that hit the MAX_CONCURRENT_STREAMS limit on the connection in the last metrics interval.
+            </summary>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer">
+            <summary>
+            A consumer of System.Net.Http EventSource events.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestStart(System.DateTime,System.String,System.String,System.Int32,System.String,System.Int32,System.Int32,System.Net.Http.HttpVersionPolicy)">
+            <summary>
+            Called before an HTTP request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="scheme">Scheme of the request Uri.</param>
+            <param name="host">Host of the request Uri.</param>
+            <param name="port">Port of the request Uri.</param>
+            <param name="pathAndQuery">Path and query of the request Uri.</param>
+            <param name="versionMajor">Major component of the request's HTTP version.</param>
+            <param name="versionMinor">Minor component of the request's HTTP version.</param>
+            <param name="versionPolicy"><see cref="T:System.Net.Http.HttpVersionPolicy"/> of the request.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestStop(System.DateTime)">
+            <summary>
+            Called after an HTTP request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestFailed(System.DateTime)">
+            <summary>
+            Called before <see cref="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestStop(System.DateTime)"/> if the request failed.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnConnectionEstablished(System.DateTime,System.Int32,System.Int32)">
+            <summary>
+            Called when a new HTTP connection is established.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="versionMajor">Major component of the connection's HTTP version.</param>
+            <param name="versionMinor">Minor component of the connection's HTTP version.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestLeftQueue(System.DateTime,System.TimeSpan,System.Int32,System.Int32)">
+            <summary>
+            Called when a request that hit the MaxConnectionsPerServer or MAX_CONCURRENT_STREAMS limit leaves the queue.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="timeOnQueue">Time spent on queue.</param>
+            <param name="versionMajor">Major component of the request's HTTP version.</param>
+            <param name="versionMinor">Minor component of the request's HTTP version.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestHeadersStart(System.DateTime)">
+            <summary>
+            Called before sending the request headers.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestHeadersStop(System.DateTime)">
+            <summary>
+            Called after sending the request headers.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestContentStart(System.DateTime)">
+            <summary>
+            Called before sending the request content.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnRequestContentStop(System.DateTime,System.Int64)">
+            <summary>
+            Called after sending the request content.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="contentLength"></param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnResponseHeadersStart(System.DateTime)">
+            <summary>
+            Called before reading the response headers.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IHttpTelemetryConsumer.OnResponseHeadersStop(System.DateTime)">
+            <summary>
+            Called after reading all response headers.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.IMetricsConsumer`1">
+            <summary>
+            A consumer of <typeparamref name="TMetrics"/>.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IMetricsConsumer`1.OnMetrics(`0,`0)">
+            <summary>
+            Processes <typeparamref name="TMetrics"/> from the last event counter interval.
+            </summary>
+            <param name="previous"><typeparamref name="TMetrics"/> collected in the previous interval.</param>
+            <param name="current"><typeparamref name="TMetrics"/> collected in the last interval.</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.IKestrelTelemetryConsumer">
+            <summary>
+            A consumer of Microsoft-AspNetCore-Server-Kestrel EventSource events.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IKestrelTelemetryConsumer.OnRequestStart(System.DateTime,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Called at the start of a request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="connectionId">ID of the connection.</param>
+            <param name="requestId">ID of the request.</param>
+            <param name="httpVersion">HTTP version of the request.</param>
+            <param name="path">Path of the request.</param>
+            <param name="method">HTTP method of the request.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IKestrelTelemetryConsumer.OnRequestStop(System.DateTime,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Called at the end of a request.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="connectionId">ID of the connection.</param>
+            <param name="requestId">ID of the request.</param>
+            <param name="httpVersion">HTTP version of the request.</param>
+            <param name="path">Path of the request.</param>
+            <param name="method">HTTP method of the request.</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.KestrelMetrics">
+            <summary>
+            Represents metrics reported by the Microsoft-AspNetCore-Server-Kestrel event counters.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.Timestamp">
+            <summary>
+            Timestamp of when this <see cref="T:Yarp.Telemetry.Consumption.KestrelMetrics"/> instance was created.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.ConnectionRate">
+            <summary>
+            Number of connections opened in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.TotalConnections">
+            <summary>
+            Number of connections opened since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.TlsHandshakeRate">
+            <summary>
+            Number of TLS handshakes started in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.TotalTlsHandshakes">
+            <summary>
+            Numer of TLS handshakes started since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.CurrentTlsHandshakes">
+            <summary>
+            Number of active TLS handshakes that have started but not yet completed or failed.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.FailedTlsHandshakes">
+            <summary>
+            Number of TLS handshakes that failed since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.CurrentConnections">
+            <summary>
+            Number of currently open connections.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.ConnectionQueueLength">
+            <summary>
+            Number of connections on the queue.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.RequestQueueLength">
+            <summary>
+            Number of requests on the queue.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.KestrelMetrics.CurrentUpgradedRequests">
+            <summary>
+            Number of currently upgraded requests (number of webSocket connections).
+            </summary>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.INameResolutionTelemetryConsumer">
+            <summary>
+            A consumer of System.Net.NameResolution EventSource events.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.INameResolutionTelemetryConsumer.OnResolutionStart(System.DateTime,System.String)">
+            <summary>
+            Called before a name resolution.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="hostNameOrAddress">Host name or address we are resolving.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.INameResolutionTelemetryConsumer.OnResolutionStop(System.DateTime)">
+            <summary>
+            Called after a name resolution.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.INameResolutionTelemetryConsumer.OnResolutionFailed(System.DateTime)">
+            <summary>
+            Called before <see cref="M:Yarp.Telemetry.Consumption.INameResolutionTelemetryConsumer.OnResolutionStop(System.DateTime)"/> if the name resolution failed.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.NameResolutionMetrics">
+            <summary>
+            Represents metrics reported by the System.Net.NameResolution event counters.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NameResolutionMetrics.Timestamp">
+            <summary>
+            Timestamp of when this <see cref="T:Yarp.Telemetry.Consumption.NameResolutionMetrics"/> instance was created.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NameResolutionMetrics.DnsLookupsRequested">
+            <summary>
+            Number of DNS lookups requested since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NameResolutionMetrics.AverageLookupDuration">
+            <summary>
+            Average DNS lookup duration in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NameResolutionMetrics.CurrentDnsLookups">
+            <summary>
+            Number of DNS lookups that have started but not yet completed or failed.
+            </summary>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.INetSecurityTelemetryConsumer">
+            <summary>
+            A consumer of System.Net.Security EventSource events.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.INetSecurityTelemetryConsumer.OnHandshakeStart(System.DateTime,System.Boolean,System.String)">
+            <summary>
+            Called before a handshake.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="isServer">Indicates whether we are authenticating as the server.</param>
+            <param name="targetHost">Name of the host we are authenticating with.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.INetSecurityTelemetryConsumer.OnHandshakeStop(System.DateTime,System.Security.Authentication.SslProtocols)">
+            <summary>
+            Called after a handshake.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="protocol">The protocol established by the handshake.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.INetSecurityTelemetryConsumer.OnHandshakeFailed(System.DateTime,System.Boolean,System.TimeSpan,System.String)">
+            <summary>
+            Called before <see cref="M:Yarp.Telemetry.Consumption.INetSecurityTelemetryConsumer.OnHandshakeStop(System.DateTime,System.Security.Authentication.SslProtocols)"/> if the handshake failed.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="isServer">Indicates whether we were authenticating as the server.</param>
+            <param name="elapsed">Time elapsed since the start of the handshake.</param>
+            <param name="exceptionMessage">Exception information for the handshake failure.</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.NetSecurityMetrics">
+            <summary>
+            Represents metrics reported by the System.Net.Security event counters.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Timestamp">
+            <summary>
+            Timestamp of when this <see cref="T:Yarp.Telemetry.Consumption.NetSecurityMetrics"/> instance was created.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.TlsHandshakeRate">
+            <summary>
+            Number of TLS handshakes completed in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.TotalTlsHandshakes">
+            <summary>
+            Number of TLS handshakes completed since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.CurrentTlsHandshakes">
+            <summary>
+            Number of active TLS handshakes that have started but not yet completed or failed.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.FailedTlsHandshakes">
+            <summary>
+            Number of TLS handshakes that failed since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.TlsSessionsOpen">
+            <summary>
+            Number of currently open TLS sessions.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls10SessionsOpen">
+            <summary>
+            Number of currently open TLS 1.0 sessions.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls11SessionsOpen">
+            <summary>
+            Number of currently open TLS 1.1 sessions.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls12SessionsOpen">
+            <summary>
+            Number of currently open TLS 1.2 sessions.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls13SessionsOpen">
+            <summary>
+            Number of currently open TLS 1.3 sessions.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.TlsHandshakeDuration">
+            <summary>
+            Average duration of all TLS handshakes completed in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls10HandshakeDuration">
+            <summary>
+            Average duration of all TLS 1.0 handshakes completed in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls11HandshakeDuration">
+            <summary>
+            Average duration of all TLS 1.1 handshakes completed in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls12HandshakeDuration">
+            <summary>
+            Average duration of all TLS 1.2 handshakes completed in the last metrics interval.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.NetSecurityMetrics.Tls13HandshakeDuration">
+            <summary>
+            Average duration of all TLS 1.3 handshakes completed in the last metrics interval.
+            </summary>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.ISocketsTelemetryConsumer">
+            <summary>
+            A consumer of System.Net.Sockets EventSource events.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.ISocketsTelemetryConsumer.OnConnectStart(System.DateTime,System.String)">
+            <summary>
+            Called before a Socket connect.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="address">Socket address we are connecting to.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.ISocketsTelemetryConsumer.OnConnectStop(System.DateTime)">
+            <summary>
+            Called after a Socket connect.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.ISocketsTelemetryConsumer.OnConnectFailed(System.DateTime,System.Net.Sockets.SocketError,System.String)">
+            <summary>
+            Called before <see cref="M:Yarp.Telemetry.Consumption.ISocketsTelemetryConsumer.OnConnectStop(System.DateTime)"/> if the connect failed.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="error"><see cref="T:System.Net.Sockets.SocketError"/> information for the connect failure.</param>
+            <param name="exceptionMessage">Exception information for the connect failure.</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.SocketsMetrics">
+            <summary>
+            Represents metrics reported by the System.Net.Sockets event counters.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.SocketsMetrics.Timestamp">
+            <summary>
+            Timestamp of when this <see cref="T:Yarp.Telemetry.Consumption.SocketsMetrics"/> instance was created.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.SocketsMetrics.OutgoingConnectionsEstablished">
+            <summary>
+            Number of outgoing (Connect) Socket connections established since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.SocketsMetrics.IncomingConnectionsEstablished">
+            <summary>
+            Number of incoming (Accept) Socket connections established since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.SocketsMetrics.BytesReceived">
+            <summary>
+            Number of bytes received since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.SocketsMetrics.BytesSent">
+            <summary>
+            Number of bytes sent since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.SocketsMetrics.DatagramsReceived">
+            <summary>
+            Number of datagrams received since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="P:Yarp.Telemetry.Consumption.SocketsMetrics.DatagramsSent">
+            <summary>
+            Number of datagrams sent since telemetry was enabled.
+            </summary>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.IWebSocketsTelemetryConsumer">
+            <summary>
+            A consumer of Yarp.ReverseProxy.WebSockets EventSource events.
+            </summary>
+        </member>
+        <member name="M:Yarp.Telemetry.Consumption.IWebSocketsTelemetryConsumer.OnWebSocketClosed(System.DateTime,System.DateTime,Yarp.Telemetry.Consumption.WebSocketCloseReason,System.Int64,System.Int64)">
+            <summary>
+            Called when a WebSockets connection is closed.
+            </summary>
+            <param name="timestamp">Timestamp when the event was fired.</param>
+            <param name="establishedTime">Timestamp when the connection upgrade completed.</param>
+            <param name="closeReason">The reason the WebSocket connection closed.</param>
+            <param name="messagesRead">Messages read by the destination server.</param>
+            <param name="messagesWritten">Messages sent by the destination server.</param>
+        </member>
+        <member name="T:Yarp.Telemetry.Consumption.WebSocketCloseReason">
+            <summary>
+            The reason the WebSocket connection closed.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.TelemetryConsumptionExtensions.AddTelemetryListeners(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers all telemetry listeners (Forwarder, Kestrel, Http, NameResolution, NetSecurity, Sockets and WebSockets).
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.TelemetryConsumptionExtensions.AddTelemetryConsumer(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Object)">
+            <summary>
+            Registers a consumer singleton for every I*TelemetryConsumer interface it implements.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.TelemetryConsumptionExtensions.AddTelemetryConsumer``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers a <typeparamref name="TConsumer"/> singleton for every I*TelemetryConsumer interface it implements.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.TelemetryConsumptionExtensions.AddMetricsConsumer(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Object)">
+            <summary>
+            Registers a consumer singleton for every IMetricsConsumer interface it implements.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.TelemetryConsumptionExtensions.AddMetricsConsumer``1(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Registers a consumer singleton for every IMetricsConsumer interface it implements.
+            </summary>
+        </member>
+    </members>
+</doc>
