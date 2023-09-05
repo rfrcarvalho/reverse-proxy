@@ -109,7 +109,7 @@ function Build {
   MSBuild $toolsetBuildProj `
     $bl `
     $platformArg `
-    /p:Configuration=$configuration `
+    /p:Configuration=Debug `
     /p:RepoRoot=$RepoRoot `
     /p:Restore=$restore `
     /p:DeployDeps=$deployDeps `
@@ -122,6 +122,8 @@ function Build {
     /p:PerformanceTest=$performanceTest `
     /p:Sign=$sign `
     /p:Publish=$publish `
+	/p:DebugSymbols=true `
+	/p:DebugType=full `
     @properties
 }
 
